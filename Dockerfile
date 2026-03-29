@@ -4,11 +4,13 @@ ENV DEBIAN_FRONTEND=noninteractive \
     TZ=Asia/Taipei \
     PORT=3000
 
+# 安裝最小依賴 + antigravity + python (提供假 server)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
-        gpg && \
+        gpg \
+        python3 && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg | \
         gpg --dearmor -o /etc/apt/keyrings/antigravity-repo-key.gpg && \
@@ -19,10 +21,10 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# 建立 user
+# 建立非 root 使用者
 RUN useradd -m appuser
 USER appuser
 WORKDIR /home/appuser
 
-# 🔥 關鍵：讓服務不退出
-CMD antigravity --host=0.0.0.0 --port=$PORT
+# 🔥 核心：背景跑 + 假 server 保活
+CMD sh -c "antigravity & python3 -m http.server $PORT"
