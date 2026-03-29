@@ -7,6 +7,7 @@ ENV PGID=1000
 ENV TZ=Asia/Taipei
 
 # 安裝 Antigravity 運行必備的系統套件
+# 修正後的安裝指令
 RUN apt-get update && apt-get install -y \
     curl \
     gpg \
@@ -14,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     libatk-bridge2.0-0 \
     libgtk-3-0 \
     libgbm1 \
-    libasound2 \
+    libasound2t64 \
     python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
