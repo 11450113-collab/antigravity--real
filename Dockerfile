@@ -1,5 +1,5 @@
 # 使用內建桌面環境的基礎鏡像
-FROM lscr.io/linuxserver/webtop:ubuntu-kde
+FROM lscr.io/linuxserver/webtop:ubuntu-xfce
 
 # 設定環境變數
 ENV PUID=1000
