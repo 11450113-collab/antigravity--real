@@ -21,7 +21,9 @@ RUN apt-get update && apt-get install -y \
 
 # 從 Google 官網下載並安裝 Antigravity 
 # 注意：此處需更換為當前版本的最新的下載鏈接
-RUN curl -L "https://antigravity.google/download/linux/main.deb" -o antigravity.deb && \
+# 請將網址替換為你從瀏覽器中實際抓到的「右鍵複製連結地址」
+RUN curl -L "https://github.com/google/antigravity/releases/latest/download/antigravity_amd64.deb" -o antigravity.deb && \
+    apt-get update && \
     apt-get install -y ./antigravity.deb && \
     rm antigravity.deb
 
