@@ -1,14 +1,10 @@
 #!/bin/bash
+set -e
 
-# 啟動虛擬桌面
-Xvfb :1 -screen 0 1280x720x24 &
+# 使用 Xvfb 啟動 headless Chrome，打開 antigravity 網頁
+Xvfb :99 -screen 0 1280x720x24 &
+export DISPLAY=:99
 
-# 啟動 Chrome 指向 antigravity.google
-google-chrome --no-sandbox --disable-gpu --display=:1 https://antigravity.google/ &
-
-# 啟動 x11vnc + noVNC
-x11vnc -display :1 -nopw -forever -shared &
-websockify --web=/usr/share/novnc/ 6080 localhost:5900 &
-
-# 保持容器活著
-tail -f /dev/null
+# 啟動 Chrome
+google-chrome --headless --disable-gpu --remote-debugging-port=9222 https://antigravity.google/ &
+wait
