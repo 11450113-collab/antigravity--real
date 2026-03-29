@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=Asia/Taipei
 
-# 安裝最少必要套件 + antigravity
+# 安裝
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -16,11 +16,17 @@ RUN apt-get update && \
         > /etc/apt/sources.list.d/antigravity.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends antigravity && \
-
-    # 🔥 極限清理
-    apt-get purge -y --auto-remove && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    rm -rf /var/lib/apt/lists/*
 
-# 🔥 最簡啟動（直接跑主程式）
+# 🔥 建立非 root 使用者
+RUN useradd -m appuser
+
+# 🔥 切換使用者
+USER appuser
+
+# 🔥 建立必要目錄
+RUN mkdir -p /home/appuser/data
+
+# 啟動
 CMD ["antigravity"]
