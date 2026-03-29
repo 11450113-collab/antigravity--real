@@ -1,33 +1,31 @@
-# 使用 LinuxServer 的 Webtop 鏡像，內建瀏覽器存取桌面的功能
+# 使用內建桌面環境的基礎鏡像
 FROM lscr.io/linuxserver/webtop:ubuntu-kde
 
-# 設定時區與權限
+# 設定環境變數
 ENV PUID=1000
 ENV PGID=1000
 ENV TZ=Asia/Taipei
 
-# 安裝 Antigravity 運行必備的系統套件
-# 修正後的安裝指令
+# 1. 安裝基礎工具與準備金鑰目錄
 RUN apt-get update && apt-get install -y \
     curl \
     gpg \
-    libnss3 \
-    libatk-bridge2.0-0 \
-    libgtk-3-0 \
-    libgbm1 \
-    libasound2t64 \
-    python3-pip \
+    ca-certificates \
+    && mkdir -p /etc/apt/keyrings
+
+# 2. 依照官方指南：導入 Google Antigravity 的 GPG 金鑰
+RUN curl -fsSL https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg | \
+    gpg --dearmor --yes -o /etc/apt/keyrings/antigravity-repo-key.gpg
+
+# 3. 依照官方指南：新增軟體源 (Sources List)
+RUN echo "deb [signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg] https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/ antigravity-debian main" | \
+    tee /etc/apt/sources.list.d/antigravity.list > /dev/null
+
+# 4. 更新快取並安裝 antigravity
+# 這裡會自動處理你之前遇到的 libasound2 等依賴問題
+RUN apt-get update && apt-get install -y \
+    antigravity \
     && rm -rf /var/lib/apt/lists/*
 
-# 從 Google 官網下載並安裝 Antigravity 
-# 注意：此處需更換為當前版本的最新的下載鏈接
-# 請將網址替換為你從瀏覽器中實際抓到的「右鍵複製連結地址」
-RUN curl -L "https://github.com/google/antigravity/releases/latest/download/antigravity_amd64.deb" -o antigravity.deb && \
-    apt-get update && \
-    apt-get install -y ./antigravity.deb && \
-    rm antigravity.deb
-
-# Render 預設對外端口，Webtop 默認為 3000
+# 預設對外端口
 EXPOSE 3000
-
-# 啟動命令已由基礎鏡像處理，Antigravity 會在啟動後在桌面中打開
