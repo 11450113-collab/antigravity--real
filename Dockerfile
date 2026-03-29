@@ -4,7 +4,7 @@ ENV PUID=1000 \
     PGID=1000 \
     TZ=Asia/Taipei
 
-# 安裝 + antigravity + 清理 + 精簡 KDE
+# 安裝 + antigravity + 精簡
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
@@ -18,7 +18,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends antigravity && \
 
-    # 🔥 移除肥大套件（KDE 常見重物）
+    # 🔥 移除肥大套件
     apt-get purge -y \
         libreoffice* \
         thunderbird \
@@ -30,12 +30,40 @@ RUN apt-get update && \
         kmahjongg \
         kmines \
         kpat \
-        plasma-discover \
-        && \
+        plasma-discover && \
 
-    # 🔥 自動移除殘留依賴
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# 🔥 建立 log 目錄
+RUN mkdir -p /var/log/antigravity
+
+# 🔥 啟動腳本（自動啟動 + log + 檢查）
+RUN echo '#!/bin/bash\n\
+echo "[INFO] Container start: $(date)" >> /var/log/antigravity/start.log\n\
+\n\
+# 檢查 antigravity 是否存在\n\
+if ! command -v antigravity >/dev/null 2>&1; then\n\
+  echo "[ERROR] antigravity not found!" >> /var/log/antigravity/error.log\n\
+  exit 1\n\
+fi\n\
+\n\
+# 啟動 antigravity（背景）\n\
+antigravity >> /var/log/antigravity/app.log 2>&1 &\n\
+\n\
+# 顯示進程\n\
+echo "[INFO] Running processes:" >> /var/log/antigravity/start.log\n\
+ps aux >> /var/log/antigravity/start.log\n\
+\n\
+# 啟動原本 webtop\n\
+exec /init\n' > /start.sh && chmod +x /start.sh
+
+# 🔥 健康檢查（確認程式還活著）
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+  CMD pgrep antigravity || exit 1
+
+# 🔥 使用自訂啟動
+CMD ["/start.sh"]
 
 EXPOSE 3000
