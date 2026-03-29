@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: google-antigravity-server
+    env: docker
+    plan: standard # 建議至少使用 Standard 或更高，以確保 AI Agent 運行順暢
+    region: singapore # 選擇離你較近的區域
+    healthCheckPath: /
+    numInstances: 1
+    disk:
+      name: antigravity-data
+      mountPath: /config
+      sizeGB: 10 # 根據你的專案大小調整
+    envVars:
+      - key: PUID
+        value: "1000"
+      - key: PGID
+        value: "1000"
+      - key: TZ
+        value: "Asia/Taipei"
+      - key: PASSWORD
+        generateValue: true # Render 會自動為你生成一個隨機密碼，記得到 Dashboard 查看
