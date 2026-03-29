@@ -1,9 +1,9 @@
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    TZ=Asia/Taipei
+    TZ=Asia/Taipei \
+    PORT=3000
 
-# 安裝
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -19,14 +19,10 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# 🔥 建立非 root 使用者
+# 建立 user
 RUN useradd -m appuser
-
-# 🔥 切換使用者
 USER appuser
+WORKDIR /home/appuser
 
-# 🔥 建立必要目錄
-RUN mkdir -p /home/appuser/data
-
-# 啟動
-CMD ["antigravity"]
+# 🔥 關鍵：讓服務不退出
+CMD antigravity --host=0.0.0.0 --port=$PORT
